@@ -7,7 +7,7 @@ class Checker:
     def __init__(self, resolution, tile_size):
         self.resolution = resolution
         self.tile_size = tile_size
-        self.output = np.zeros((resolution, resolution))  # numpy array that stores the checkerboard
+        self.output = np.zeros((resolution, resolution), dtype="b")  # numpy array that stores the checkerboard
 
 
     def draw(self):
@@ -25,26 +25,36 @@ class Checker:
         self.output = np.tile(block_together, runs).reshape((self.resolution, self.resolution))
         return np.tile(block_together, runs).reshape((self.resolution, self.resolution))
 
-
-
-
-
-
-
     def show(self):
         pass
-        plt.imshow(self.output, cmap='gray')  # gray_r: 1=black, 0=white
+        plt.imshow(self.output, cmap='gray')  # gray: 0=black, 1=white
         plt.show()
 
 
 
 
 class Circle:
-    def __init__(self):
-        return
+    def __init__(self, resolution, radius, position):
+        self.resolution = resolution
+        self.radius = radius
+        self.position = position
+        self.output = np.zeros((resolution, resolution), dtype="b")
+
 
     def draw(self):
-        return
+        x = np.linspace(0, self.resolution, self.resolution)
+        y = np.linspace(0, self.resolution, self.resolution)
+        xx, yy = np.meshgrid(x, y)              # do meshgrid here to get xx's and yy's (grayscale gradients visually)
+        self.output = self.circle_func(xx, yy)  # apply the circle condition to each of them (boolean return type)
+        return self.circle_func(xx, yy)
+
 
     def show(self):
-        return
+        pass
+        plt.imshow(self.output, cmap='gray')  # gray: 0=black, 1=white
+        plt.show()
+
+
+    # Returns true, iff a given point lies inside the radius of a circle using the circle equation (pythagoras)
+    def circle_func(self, x, y):
+        return (x - self.position[0])**2 + (y - self.position[1])**2 <= self.radius ** 2
