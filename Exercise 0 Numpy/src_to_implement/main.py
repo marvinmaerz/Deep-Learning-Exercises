@@ -1,9 +1,14 @@
 import pattern
+import generator
 
 
 
-checker = pattern.Checker()
+checker = pattern.Checker(16,4)
+checker.draw()
+checker.show()
 
 
+# circle = pattern.Circle()
 
-circle = pattern.Circle()
+
+# generator = generator.Generator()

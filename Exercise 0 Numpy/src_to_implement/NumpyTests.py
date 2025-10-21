@@ -11,8 +11,10 @@ class TestCheckers(unittest.TestCase):
     def setUp(self):
         # Loads the reference images
 
-        self.reference_img = np.load('reference_arrays/checker.npy')
-        self.reference_img2 = np.load('reference_arrays/checker2.npy')
+        # Running in PATH = C:\Users\Marvin\OneDrive\M.Sc. Informatik\DL (Deep Learning)\Deep-Learning-Exercises
+        # Prefix parent folders to access reference_arrays folder
+        self.reference_img = np.load("Exercise 0 Numpy\src_to_implement\\reference_arrays\checker.npy")
+        self.reference_img2 = np.load('Exercise 0 Numpy\src_to_implement\\reference_arrays\checker2.npy')
 
     def testPattern(self):
         # Creates a checkerboard pattern with resolution 250x250
