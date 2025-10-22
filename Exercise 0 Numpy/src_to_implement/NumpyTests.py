@@ -163,8 +163,8 @@ class TestSpectrum(unittest.TestCase):
 class TestGen(unittest.TestCase):
     def setUp(self):
         # Set the label and the file path
-        self.label_path = './Labels.json'
-        self.file_path = './exercise_data/'
+        self.label_path = 'Exercise 0 Numpy/src_to_implement/Labels.json'
+        self.file_path = 'Exercise 0 Numpy/src_to_implement/exercise_data/'
 
     def _get_corner_points(self, image):
         # Utility function to check whether the augmentations where performed

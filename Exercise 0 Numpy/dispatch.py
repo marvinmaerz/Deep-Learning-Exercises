@@ -28,7 +28,7 @@ def coherency_check(actual_files, desired_files, print_out = True):
         elif found > 1:
             ambigous_files.append(des_file)
     if len(missing_files) and print_out :
-        print("The following files could not be found: ")
+        print("The following images could not be found: ")
         for i, f in enumerate(missing_files):
             print("%d: %20s" %(i, f))
     if len(ambigous_files) and print_out :
@@ -88,17 +88,17 @@ def get_exercise_number(files):
         exit(1)
 
 if __name__ == "__main__":
-    description = "The dispatch tool is a helper script, that conveniently checks all your files for completeness and" \
+    description = "The dispatch tool is a helper script, that conveniently checks all your images for completeness and" \
                   " zips everything together so you can submit just one file. It helps us to have a coherent " \
                   "submissions across all students and also prevents you from forgetting any file to submit." \
                   " If the dispatcher is executed without arguments, it will look for  unittests in the current " \
-                  "working directory and will dispatch the corresponding files accordingly into a default zip file " \
+                  "working directory and will dispatch the corresponding images accordingly into a default zip file " \
                   "submission.zip. We recommend to use the dispatcher explicitly with the -i argument for the" \
                   " folder that needs to be dispatched and -o arguments for the output zip folder"
 
     parser = ArgumentParser(description=description)
     parser.add_argument("-i", "--input", required=False,
-                        help = "src folder which contains all python files")
+                        help = "src folder which contains all python images")
     parser.add_argument("-o", "--output", required=False,
                         help="file name of output zip folder")
     args = parser.parse_args()
@@ -125,11 +125,11 @@ if __name__ == "__main__":
     ex_nr = get_exercise_number(files)
     print("Exercise {} is about to be dispatched".format(ex_nr))
     if not coherency_check(files, exercise_files[ex_nr]):
-        print("It seems the files listed above are missing. Please check your files if you still want to submit them")
+        print("It seems the images listed above are missing. Please check your images if you still want to submit them")
         response = input("Do you want to continue with the dispatch? [y/n]: ")
         if response.lower() == "y":
             dispatch(files, exercise_files[ex_nr], args.output)
-            print("Your submission is ready to be submitted. Notice, the files listed above we're not dispatched.")
+            print("Your submission is ready to be submitted. Notice, the images listed above we're not dispatched.")
             print("Please upload {} now to studon".format(args.output))
         elif response.lower() == "n":
             print("Dispatching has been stopped")
