@@ -26,7 +26,6 @@ class Checker:
         return np.tile(block_together, runs).reshape((self.resolution, self.resolution))
 
     def show(self):
-        pass
         plt.imshow(self.output, cmap='gray')  # gray: 0=black, 1=white
         plt.show()
 
@@ -50,7 +49,6 @@ class Circle:
 
 
     def show(self):
-        pass
         plt.imshow(self.output, cmap='gray')  # gray: 0=black, 1=white
         plt.show()
 
@@ -58,3 +56,26 @@ class Circle:
     # Returns true, iff a given point lies inside the radius of a circle using the circle equation (pythagoras)
     def circle_func(self, x, y):
         return (x - self.position[0])**2 + (y - self.position[1])**2 <= self.radius ** 2
+
+
+
+class Spectrum:
+    def __init__(self, resolution):
+        self.resolution = resolution
+        self.output = np.zeros((resolution, resolution, 3))
+
+
+    def draw(self):
+        red = np.linspace(0, 1.0, self.resolution)
+        green = np.linspace(0, 1.0, self.resolution)
+        blue = np.linspace(1.0, 0.0, self.resolution)
+        # Set colors. Each color has its own channel in the color dimension (3rd dimension, after the coordinates, which are left unchanged)
+        self.output[:,:,0] = red                                    # red: left (0.0) -> right (1.0)
+        self.output[:,:,1] = green.reshape((self.resolution,1))     # green: top (0.0) -> bottom (1.0)
+        self.output[:,:,2] = blue                                   # blue: right (0.0) -> left (1.0)
+        return np.copy(self.output)
+
+
+    def show(self):
+        plt.imshow(self.output)
+        plt.show()
