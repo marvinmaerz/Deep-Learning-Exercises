@@ -1,4 +1,4 @@
-# Deep-Learning-Exercises
+# Deep Learning Exercises
 Programming exercises accompanying the FAU course "Deep Learning" by implementing major deep learning approaches.
 
 - Ex0 - Numpy (Image Generation & Augmentation) 
