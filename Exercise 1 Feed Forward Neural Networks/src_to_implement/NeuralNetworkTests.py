@@ -53,11 +53,15 @@ class TestFullyConnected1(unittest.TestCase):
         output_tensor = layer.forward(self.input_tensor)
         # print(output_tensor.shape)
         error_tensor = layer.backward(output_tensor)
+        # print("Error tensor: ",error_tensor.shape)
+        # print(error_tensor)
+        # print("Input tensor: ", self.input_tensor.shape)
+        # print(self.input_tensor)
         self.assertEqual(error_tensor.shape[1],
                          self.input_size,
                          msg="Possible error: The shape of the output tensor (backward function) is not correct. "
-                             "Please make sure that you remove the fake errors that were comptet because of the added"
-                             " collumn in the input (to include bias addition in the weight matrix multiplication)."
+                             "Please make sure that you remove the fake errors that were computed because of the added"
+                             " column in the input (to include bias addition in the weight matrix multiplication)."
                          )
         self.assertEqual(error_tensor.shape[0],
                          self.batch_size,
