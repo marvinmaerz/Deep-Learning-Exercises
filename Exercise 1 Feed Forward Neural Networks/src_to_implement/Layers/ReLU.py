@@ -4,7 +4,7 @@ from Layers.Base import BaseLayer
 
 class ReLU(BaseLayer):
     """
-    The "Rectified Linear Unit" (ReLU) activation function.
+    The "Rectified Linear Unit" (ReLU) activation function layer.
     """
 
     def __init__(self):
