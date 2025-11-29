@@ -40,6 +40,12 @@ class FullyConnected(BaseLayer):
         self._gradient_weights = gradient_weights
 
 
+    def initialize(self, weights_initializer, bias_initializer):
+        self.weights = weights_initializer.initialize(self.weights.shape, self.input_size, self.output_size)
+        self.weights[-1] = bias_initializer.initialize(self.weights[-1].shape, self.input_size, self.output_size)
+
+
+
 
     def forward(self, input_tensor):
         """
