@@ -571,6 +571,9 @@ class TestConv(unittest.TestCase):
         expected_output = gaussian_filter(input_tensor[0, 0, :, :], 0.85, mode='constant', cval=0.0, truncate=1.0)
         output_tensor = conv.forward(input_tensor).reshape((10, 14))
         difference = np.max(np.abs(expected_output - output_tensor))
+
+        visualize_differences(output_tensor, expected_output)
+
         self.assertAlmostEqual(difference, 0., places=1,
                                msg="Possible reason: Implementation for the forward pass is not correct. Check the"
                                    "correlation again and make sure, that you correlate the input_tensor with the"
@@ -582,20 +585,42 @@ class TestConv(unittest.TestCase):
         bias = 1
         conv = Conv.Conv((1, 1), (maps_in, 3, 3), 1)
         filter = (1./15.) * np.array([[[1, 2, 1], [2, 3, 2], [1, 2, 1]]])
+
+
+        # # Exact gaussian filter kernel:
+        # impulse = np.zeros((3, 3))
+        # impulse[1, 1] = 1.0
+        # gauss_kernel = gaussian_filter(impulse, 0.85, mode='constant', cval=0.0, truncate=1.0)
+        # gauss_kernel = np.expand_dims(gauss_kernel, 0)
+        # diff = np.max(np.abs(filter - gauss_kernel) / maps_in)
+        # print(filter.shape)
+        # print(gauss_kernel.shape)
+        # print(diff)
+
         conv.weights = np.repeat(filter[None, ...], maps_in, axis=1)
+
+        # Assign exact gaussian filter as kernel:
+        # conv.weights = np.repeat(gauss_kernel[None, ...], maps_in, axis=1)
+
         conv.bias = np.array([bias])
         input_tensor = np.random.random((1, maps_in, 10, 14))
         expected_output = bias
         for map_i in range(maps_in):
             expected_output = expected_output + gaussian_filter(input_tensor[0, map_i, :, :], 0.85, mode='constant',
                                                                 cval=0.0, truncate=1.0)
+
         output_tensor = conv.forward(input_tensor).reshape((10, 14))
         difference = np.max(np.abs(expected_output - output_tensor) / maps_in)
+
+        visualize_differences(output_tensor, expected_output)
+
         self.assertAlmostEqual(difference, 0., places=1,
                                msg="Possible reason: If test_forward fails as well, fix that one first. Otherwise,"
                                    "your implementation for the valid correlation in channel dimension might not work"
                                    "correctly. Make sure to select the correct channel if you do a same correlation."
                                    "Also make sure to add the bias.")
+
+
 
     def test_forward_fully_connected_channels(self):
         np.random.seed(1337)
@@ -611,6 +636,9 @@ class TestConv(unittest.TestCase):
         expected_output = 3 * gaussian_filter(input_tensor[0, 0, :, :], 0.85, mode='constant', cval=0.0, truncate=1.0)
         output_tensor = conv.forward(input_tensor).reshape((10, 14))
         difference = np.max(np.abs(expected_output - output_tensor))
+
+        visualize_differences(output_tensor, expected_output)
+
         self.assertLess(difference, 0.2, "Possible reason: If test_forward and/or test_forward_multi_channel fail as"
                                          "well, fix those first. Otherwise, your implementation for the valid"
                                          "correlation in channel dimension might not work correctly. Make sure to"
@@ -1142,6 +1170,20 @@ class L2Loss:
 
     def backward(self, label_tensor):
         return 2*np.subtract(self.input_tensor, label_tensor)
+
+
+def visualize_differences(actual, expected):
+    difference = np.abs(expected - actual)
+    f, axarr = plt.subplots(2, 2)
+    axarr[0, 0].imshow(actual, cmap="gray")
+    axarr[0, 0].set_title("Output")
+    axarr[0, 1].imshow(expected, cmap="gray")
+    axarr[0, 1].set_title("Expected")
+    axarr[1, 0].imshow(difference, cmap="Reds")
+    axarr[1, 0].set_title("Difference")
+    plt.axis("off")
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
