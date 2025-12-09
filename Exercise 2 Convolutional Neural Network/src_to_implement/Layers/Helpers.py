@@ -161,7 +161,7 @@ class IrisData:
     def __init__(self, batch_size):
         self.batch_size = batch_size
         self._data = load_iris()
-        self._label_tensor = OneHotEncoder(sparse=False).fit_transform(self._data.target.reshape(-1, 1))
+        self._label_tensor = OneHotEncoder(sparse_output=False).fit_transform(self._data.target.reshape(-1, 1))
         self._input_tensor = self._data.data
         self._input_tensor /= np.abs(self._input_tensor).max()
 
@@ -195,7 +195,7 @@ class DigitData:
     def __init__(self, batch_size):
         self.batch_size = batch_size
         self._data = load_digits(n_class=10)
-        self._label_tensor = OneHotEncoder(sparse=False).fit_transform(self._data.target.reshape(-1, 1))
+        self._label_tensor = OneHotEncoder(sparse_output=False).fit_transform(self._data.target.reshape(-1, 1))
         self._input_tensor = self._data.data.reshape(-1, 1, 8, 8)
         self._input_tensor /= np.abs(self._input_tensor).max()
 

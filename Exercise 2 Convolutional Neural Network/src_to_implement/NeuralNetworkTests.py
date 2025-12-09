@@ -950,8 +950,8 @@ class TestPooling(unittest.TestCase):
 
 
 class TestNeuralNetwork2(unittest.TestCase):
-    plot = False
-    directory = 'plots/'
+    plot = True
+    directory = 'C:\\Users\\Marvin\\OneDrive\\M.Sc. Informatik\\DL (Deep Learning)\\Deep-Learning-Exercises\\Exercise 2 Convolutional Neural Network\\src_to_implement\\plots\\'
     log = 'log.txt'
 
     def test_append_layer(self):
@@ -1013,7 +1013,7 @@ class TestNeuralNetwork2(unittest.TestCase):
         if TestNeuralNetwork2.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using SGD')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork2.pdf"), transparent=True, bbox_inches='tight',
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork2.jpg"), transparent=True, bbox_inches='tight',
                         pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
@@ -1048,7 +1048,7 @@ class TestNeuralNetwork2(unittest.TestCase):
         if TestNeuralNetwork2.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using Momentum')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork2_Momentum.pdf"), transparent=True,
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork2_Momentum.jpg"), transparent=True,
                         bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
@@ -1083,7 +1083,7 @@ class TestNeuralNetwork2(unittest.TestCase):
         if TestNeuralNetwork2.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using ADAM')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork2_ADAM.pdf"), transparent=True,
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork2_ADAM.jpg"), transparent=True,
                         bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
@@ -1141,7 +1141,7 @@ class TestNeuralNetwork2(unittest.TestCase):
             description = 'on_digit_data'
             fig = plt.figure('Loss function for training a Convnet on the Digit dataset')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestConvNet_" + description + ".pdf"), transparent=True,
+            fig.savefig(os.path.join(self.directory, "TestConvNet_" + description + ".jpg"), transparent=True,
                         bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
@@ -1173,17 +1173,19 @@ class L2Loss:
 
 
 def visualize_differences(actual, expected):
-    difference = np.abs(expected - actual)
-    f, axarr = plt.subplots(2, 2)
-    axarr[0, 0].imshow(actual, cmap="gray")
-    axarr[0, 0].set_title("Output")
-    axarr[0, 1].imshow(expected, cmap="gray")
-    axarr[0, 1].set_title("Expected")
-    axarr[1, 0].imshow(difference, cmap="Reds")
-    axarr[1, 0].set_title("Difference")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.show()
+    show_image:bool = False                             # set to True, if I want to see my own visualizations
+    if show_image:
+        difference = np.abs(expected - actual)
+        f, axarr = plt.subplots(2, 2)
+        axarr[0, 0].imshow(actual, cmap="gray")
+        axarr[0, 0].set_title("Output")
+        axarr[0, 1].imshow(expected, cmap="gray")
+        axarr[0, 1].set_title("Expected")
+        axarr[1, 0].imshow(difference, cmap="Reds")
+        axarr[1, 0].set_title("Difference")
+        plt.axis("off")
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__ == "__main__":

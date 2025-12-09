@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.signal as signal
-import skimage
+import copy
 
 from Layers.Base import BaseLayer
 
@@ -38,7 +38,9 @@ class Conv(BaseLayer):
 
         self._gradient_weights = np.empty((num_kernels, *convolution_shape))
         self._gradient_bias = np.empty(num_kernels)
-        self._optimizer = None
+
+        self._optimizer = None              # Optimizer for the weights
+        self._bias_optimizer = None         # When self.optimizer is set, make two separate copies: one for weights, one for bias
 
 
     @property
@@ -70,6 +72,7 @@ class Conv(BaseLayer):
     def optimizer(self, optimizer):
         """Setter method for the optimizer property."""
         self._optimizer = optimizer
+        self._bias_optimizer = copy.deepcopy(optimizer)
 
 
     def initialize(self, weights_initializer, bias_initializer):
@@ -126,7 +129,6 @@ class Conv(BaseLayer):
             for b in range(batches):
                 for k in range(self.num_kernels):
                     # error_upsampled[b, k] = skimage.transform.resize(error_tensor[b,k], self.input_tensor.shape[2:])
-                    # TODO: do without interpolation! Fails tests with strided input (test_gradient_stride())
                     error_upsampled[b, k] = self._reverse_stride(error_tensor[b, k], self.input_tensor.shape[2:])
             error_tensor = error_upsampled
 
@@ -172,7 +174,7 @@ class Conv(BaseLayer):
         # Update weights if optimizer is set
         if self.optimizer is not None:
             self.weights = self.optimizer.calculate_update(self.weights, self.gradient_weights)
-            self.bias = self.optimizer.calculate_update(self.bias, self.gradient_bias)
+            self.bias = self._bias_optimizer.calculate_update(self.bias, self.gradient_bias)
 
         return gradient_input
 
