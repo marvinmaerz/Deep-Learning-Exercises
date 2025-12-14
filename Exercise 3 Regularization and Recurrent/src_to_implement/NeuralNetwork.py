@@ -12,6 +12,19 @@ class NeuralNetwork:
         self.layers = []                # holds the network architecture
         self.data_layer = None          # provides input data and labels, set from outside
         self.loss_layer = None          # reference to the special layer providing loss and prediction, last layer of the network, set from outside
+        self._phase:str = "Training"    # or "Testing"
+
+
+    @property
+    def phase(self):
+        """Getter"""
+        return self._phase
+
+
+    @phase.setter
+    def phase(self, phase):
+        """Setter"""
+        self._phase = phase
 
 
     def forward(self):
@@ -61,6 +74,10 @@ class NeuralNetwork:
         """
         self.loss = np.zeros(iterations)        # reset the loss, allocate enough memory to store each iteration's loss value
 
+        self.phase = "Training"
+        for layer in self.layers:
+            if layer.trainable: layer.testing_phase = False
+
         for i in range(iterations):
             loss, label_tensor = self.forward()
             self.loss[i] = loss
@@ -74,7 +91,10 @@ class NeuralNetwork:
         :return: The prediction of the last layer.
         """
         prediction = input_tensor
+
+        self.phase = "Testing"
         for layer in self.layers:
+            if layer.trainable: layer.testing_phase = True
             prediction = layer.forward(prediction)
 
         return prediction

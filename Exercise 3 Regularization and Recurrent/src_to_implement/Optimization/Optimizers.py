@@ -1,14 +1,23 @@
 import numpy as np
 
+class Optimizer:
+    """Base class for all optimizers."""
+    def __init__(self, learning_rate):
+        self.learning_rate = learning_rate
+        self.regularizer = None
 
 
-class Sgd:
+    def add_regularizer(self, regularizer):
+        self.regularizer = regularizer
+
+
+class Sgd (Optimizer):
     """
     Basic Stochastic Gradient Descent (SGD) class.
     Updates weights based on the basic update scheme.
     """
     def __init__(self, learning_rate:float):
-        self.learning_rate = learning_rate
+        super().__init__(learning_rate)
 
 
     def calculate_update(self, weight_tensor, gradient_tensor):
@@ -21,13 +30,13 @@ class Sgd:
         return weight_tensor - self.learning_rate * gradient_tensor
 
 
-class SgdWithMomentum:
+class SgdWithMomentum (Optimizer):
     """
     Stochastic Gradient Descent (SGD) weight updating scheme using momentum.
     """
 
     def __init__(self, learning_rate, momentum_rate):
-        self.learning_rate = learning_rate
+        super().__init__(learning_rate)
         self.momentum_rate = momentum_rate
         self.v = None               # save the moment
 
@@ -46,13 +55,13 @@ class SgdWithMomentum:
         return weight_tensor + self.v
 
 
-class Adam:
+class Adam (Optimizer):
     """
     Weight updates using the Adam algorithm.
     """
 
     def __init__(self, learning_rate, mu, rho):
-        self.learning_rate = learning_rate
+        super().__init__(learning_rate)
         self.mu = mu            # aka beta_1
         self.rho = rho          # aka beta_2
         # Intermediate values:
