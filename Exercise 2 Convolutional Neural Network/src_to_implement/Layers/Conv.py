@@ -131,6 +131,9 @@ class Conv(BaseLayer):
                     # error_upsampled[b, k] = skimage.transform.resize(error_tensor[b,k], self.input_tensor.shape[2:])
                     error_upsampled[b, k] = self._reverse_stride(error_tensor[b, k], self.input_tensor.shape[2:])
             error_tensor = error_upsampled
+        # Another solution (tutor):
+        # (1) define upsampled error tensor with correct size
+        # (2): err_upsampled[:, :, ::stride_shape[0], ::stride_shape[1]] = error_tensor     # without slicing the error tensor!
 
         # print("\nInput tensor shape: ", self.input_tensor.shape, " [b, c, y, x]")
         # print("Error tensor shape: ", error_tensor.shape, f"[b, num_kernels={self.num_kernels}, y, x]")

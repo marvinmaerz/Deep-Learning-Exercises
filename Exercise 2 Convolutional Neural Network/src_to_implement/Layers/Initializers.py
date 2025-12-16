@@ -24,6 +24,7 @@ class UniformRandom:
 class Xavier:
     """
     Initializer class for Xavier weights and biases.
+    Typically used for Sigmoid activations.
     """
 
     def initialize(self, weights_shape, fan_in, fan_out):
@@ -35,6 +36,7 @@ class Xavier:
 class He:
     """
     Initializer class for He weights and biases.
+    Typically used for ReLU activations.
     """
 
     def initialize(self, weights_shape, fan_in, fan_out=-1):

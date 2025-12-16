@@ -24,6 +24,7 @@ class Sgd:
 class SgdWithMomentum:
     """
     Stochastic Gradient Descent (SGD) weight updating scheme using momentum.
+    Momentum rate controls the amount that past gradients control the weight update.
     """
 
     def __init__(self, learning_rate, momentum_rate):
@@ -49,6 +50,8 @@ class SgdWithMomentum:
 class Adam:
     """
     Weight updates using the Adam algorithm.
+    Mu and rho control the amount with which the past moments (mean and uncentered variance)
+    influence the weight updates.
     """
 
     def __init__(self, learning_rate, mu, rho):
