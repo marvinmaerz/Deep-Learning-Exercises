@@ -34,10 +34,14 @@ class NeuralNetwork:
         """
         input_tensor, label_tensor = self.data_layer.next()
         prediction = input_tensor
+        regularization_loss = 0
         for layer in self.layers:
             prediction = layer.forward(prediction)
+            if layer.trainable:
+                regularization_loss += layer.optimizer.regularizer.norm(layer.weights)
+                # TODO: validate this loss
 
-        return self.loss_layer.forward(prediction, label_tensor), label_tensor
+        return self.loss_layer.forward(prediction, label_tensor) + regularization_loss, label_tensor
 
 
     def backward(self, label_tensor):

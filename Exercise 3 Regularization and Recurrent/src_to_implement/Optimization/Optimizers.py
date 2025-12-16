@@ -1,4 +1,6 @@
 import numpy as np
+from Optimization.Constraints import L1_Regularizer
+from Optimization.Constraints import L2_Regularizer
 
 class Optimizer:
     """Base class for all optimizers."""
@@ -27,7 +29,11 @@ class Sgd (Optimizer):
         :param gradient_tensor: gradient of the loss function with respect to the weights.
         :return: the updated weight tensor.
         """
-        return weight_tensor - self.learning_rate * gradient_tensor
+        shrinkage = weight_tensor
+        if self.regularizer is not None:
+            shrinked_weights = self.regularizer.calculate_gradient(weight_tensor)
+            shrinkage = weight_tensor - self.learning_rate * shrinked_weights
+        return shrinkage - self.learning_rate * gradient_tensor
 
 
 class SgdWithMomentum (Optimizer):
@@ -48,11 +54,16 @@ class SgdWithMomentum (Optimizer):
         :param gradient_tensor: gradient of the loss function with respect to the weights.
         :return: the updated weight tensor.
         """
+        shrinkage = weight_tensor
+        if self.regularizer is not None:
+            shrinked_weights = self.regularizer.calculate_gradient(weight_tensor)
+            shrinkage = weight_tensor - self.learning_rate * shrinked_weights
+
         if self.v is None:
             self.v = np.zeros_like(weight_tensor)     # v must have the same shape as w
 
         self.v = self.momentum_rate * self.v - self.learning_rate * gradient_tensor
-        return weight_tensor + self.v
+        return shrinkage + self.v
 
 
 class Adam (Optimizer):
@@ -80,6 +91,11 @@ class Adam (Optimizer):
         :return: the updated weight tensor.
         """
         # Initialization of moment vectors and values
+        shrinkage = weight_tensor
+        if self.regularizer is not None:
+            shrinked_weights = self.regularizer.calculate_gradient(weight_tensor)
+            shrinkage = weight_tensor - self.learning_rate * shrinked_weights
+
         if self.timestep == 0:
             self.v = np.zeros_like(weight_tensor)
             self.r = np.zeros_like(weight_tensor)
@@ -94,4 +110,4 @@ class Adam (Optimizer):
         rhat = self.r / (1 - np.power(self.rho, self.timestep))
 
         # Weight update:
-        return weight_tensor - self.learning_rate * vhat / (np.sqrt(rhat) + self.eps)
+        return shrinkage - self.learning_rate * vhat / (np.sqrt(rhat) + self.eps)
