@@ -13,4 +13,9 @@ class BaseLayer:
 
 
     def backward(self, error_tensor):
+        """
+        Backward propagation of gradients to lower layers.
+        :param error_tensor: Gradients of higher layer. L'(y).
+        :return: Error tensor for the lower layers. L'(x) = L'(y) * y'(x).
+        """
         pass
