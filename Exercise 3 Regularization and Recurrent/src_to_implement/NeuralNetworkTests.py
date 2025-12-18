@@ -1107,7 +1107,7 @@ class TestDropout(unittest.TestCase):
 
 class TestBatchNorm(unittest.TestCase):
     plot = False
-    directory = 'plots/'
+    directory = 'C:\\Users\\Marvin\\OneDrive\\M.Sc. Informatik\\DL (Deep Learning)\\Deep-Learning-Exercises\\Exercise 3 Regularization and Recurrent\\plots\\'
 
     def setUp(self):
         self.batch_size = 200

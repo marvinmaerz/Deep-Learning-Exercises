@@ -9,6 +9,11 @@ class BaseLayer:
 
 
     def forward(self, input_tensor):
+        """
+        Calculates the forward pass of the layer.
+        :param input_tensor: Tensor on which to calculate the forward pass.
+        :return: Output tensor that serves input tensor for the next layer.
+        """
         pass
 
 
