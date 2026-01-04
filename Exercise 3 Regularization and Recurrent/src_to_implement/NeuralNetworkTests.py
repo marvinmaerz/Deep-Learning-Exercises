@@ -1623,7 +1623,7 @@ class TestNeuralNetwork3(unittest.TestCase):
         if TestNeuralNetwork3.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using SGD')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3.pdf"), transparent=True, bbox_inches='tight', pad_inches=0)
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3.jpg"), transparent=True, bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
 
@@ -1682,7 +1682,7 @@ class TestNeuralNetwork3(unittest.TestCase):
         if TestNeuralNetwork3.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using Momentum')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_Momentum.pdf"), transparent=True, bbox_inches='tight', pad_inches=0)
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_Momentum.jpg"), transparent=True, bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
 
@@ -1713,7 +1713,7 @@ class TestNeuralNetwork3(unittest.TestCase):
         if TestNeuralNetwork3.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using ADAM')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_ADAM.pdf"), transparent=True, bbox_inches='tight', pad_inches=0)
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_ADAM.jpg"), transparent=True, bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
 
@@ -1745,7 +1745,7 @@ class TestNeuralNetwork3(unittest.TestCase):
         if TestNeuralNetwork3.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using Batchnorm')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_Batchnorm.pdf"), transparent=True, bbox_inches='tight', pad_inches=0)
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_Batchnorm.jpg"), transparent=True, bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
 
@@ -1780,7 +1780,7 @@ class TestNeuralNetwork3(unittest.TestCase):
         if TestNeuralNetwork3.plot:
             fig = plt.figure('Loss function for a Neural Net on the Iris dataset using Dropout')
             plt.plot(net.loss, '-x')
-            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_Dropout.pdf"), transparent=True, bbox_inches='tight', pad_inches=0)
+            fig.savefig(os.path.join(self.directory, "TestNeuralNetwork3_Dropout.jpg"), transparent=True, bbox_inches='tight', pad_inches=0)
 
         data, labels = net.data_layer.get_test_set()
 
