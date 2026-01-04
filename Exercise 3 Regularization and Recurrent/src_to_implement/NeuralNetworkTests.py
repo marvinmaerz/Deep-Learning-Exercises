@@ -1563,8 +1563,8 @@ if LSTM_TEST:
 
 class TestNeuralNetwork3(unittest.TestCase):
     plot = False
-    directory = 'plots/'
-    log = 'log.txt'
+    directory = 'C:\\Users\\Marvin\\OneDrive\\M.Sc. Informatik\\DL (Deep Learning)\\Deep-Learning-Exercises\\Exercise 3 Regularization and Recurrent\\plots\\'
+    log = 'C:\\Users\\Marvin\\OneDrive\\M.Sc. Informatik\\DL (Deep Learning)\\Deep-Learning-Exercises\\Exercise 3 Regularization and Recurrent\\plots\\log.txt'
     iterations = 100
 
     def test_append_layer(self):

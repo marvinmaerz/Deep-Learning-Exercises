@@ -37,9 +37,7 @@ class NeuralNetwork:
         regularization_loss = 0
         for layer in self.layers:
             prediction = layer.forward(prediction)
-            if layer.trainable:
-                regularization_loss += layer.optimizer.regularizer.norm(layer.weights)
-                # TODO: validate this loss
+            regularization_loss += layer.calculate_regularization_loss()
 
         return self.loss_layer.forward(prediction, label_tensor) + regularization_loss, label_tensor
 
@@ -98,7 +96,7 @@ class NeuralNetwork:
 
         self.phase = "Testing"
         for layer in self.layers:
-            if layer.trainable: layer.testing_phase = True
+            layer.testing_phase = True
             prediction = layer.forward(prediction)
 
         return prediction
