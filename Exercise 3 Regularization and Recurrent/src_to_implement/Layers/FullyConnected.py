@@ -12,7 +12,7 @@ class FullyConnected(BaseLayer):
         rng = np.random.default_rng()
         self.weights = rng.random((input_size + 1, output_size))        # uniform distribution, input_size + 1 for bias allowance
 
-        self.input = np.zeros(input_size)
+        self.input = np.zeros(input_size)       # stored for backpropagation
 
         self._optimizer = None
 
@@ -45,6 +45,12 @@ class FullyConnected(BaseLayer):
         self.weights[-1] = bias_initializer.initialize(self.weights[-1].shape, self.input_size, self.output_size)
 
 
+    def calculate_regularization_loss(self):
+        """Calculates the regularization loss for this layer if an optimizer/regularizer has been set."""
+        reg_loss = 0
+        if self.optimizer and self.optimizer.regularizer:
+            reg_loss += self.optimizer.regularizer.norm(self.weights)
+        return reg_loss
 
 
     def forward(self, input_tensor):

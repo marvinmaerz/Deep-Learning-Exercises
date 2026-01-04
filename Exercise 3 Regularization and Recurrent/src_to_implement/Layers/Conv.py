@@ -83,6 +83,15 @@ class Conv(BaseLayer):
         self.bias = bias_initializer.initialize(self.bias.shape, fan_in, fan_out)
 
 
+    def calculate_regularization_loss(self):
+        """Calculates the regularization loss for this layer if an optimizer/regularizer has been set."""
+        reg_loss = 0
+        if self.optimizer and self.optimizer.regularizer:
+            reg_loss += self.optimizer.regularizer.norm(self.weights)
+        return reg_loss
+
+
+
     def forward(self, input_tensor):
         """
         Forward pass of the convolutional layer.

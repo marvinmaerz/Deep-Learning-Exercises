@@ -24,3 +24,12 @@ class BaseLayer:
         :return: Error tensor for the lower layers. L'(x) = L'(y) * y'(x).
         """
         pass
+
+
+    def calculate_regularization_loss(self):
+        """
+        Calculates the regularization loss for this layer if an optimizer/regularizer has been set,
+        i.e. if the layer is trainable.
+        :return: 0 if layer is not trainable or no optimizer/regularizer has been set, else the regularization loss.
+        """
+        return 0
