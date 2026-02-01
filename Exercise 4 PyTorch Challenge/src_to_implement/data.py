@@ -48,7 +48,7 @@ class ChallengeDataset(Dataset):
         # Toggle via boolean below.
         # Results: test_normalization runtime using self.images in memory: ~6,5 seconds; with on demand loading: ~10,5 seconds
         # => ~40% faster access times
-        self.preload_images = False
+        self.preload_images = True
         if self.preload_images:
             self.images : dict[str, np.ndarray] = {}        # Example key-value pair: { "images/cell0001.png": [1 (cracked), 0 (inactive)] }
             for i in range(data.shape[0]):
@@ -70,7 +70,7 @@ class ChallengeDataset(Dataset):
             img_path_full = self.dirname.joinpath(img_path)
             img = imread(img_path_full)         # on demand reading from external memory (may be slower)
         img_rgb = gray2rgb(img)
-        label = torch.tensor([cracked, inactive])
+        label = torch.tensor([cracked, inactive], dtype=torch.float32)
         if self.mode == "train":
             return self.train_transform(img_rgb), label
         elif self.mode == "val":

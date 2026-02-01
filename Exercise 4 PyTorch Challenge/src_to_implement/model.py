@@ -5,7 +5,7 @@ import numpy as np
 
 # noinspection SpellCheckingInspection
 class ResNet(nn.Module):
-    # todo: add embedded layers in __init__() and forward function
+
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv2d(3, 64, kernel_size=7, padding=3, stride=2)
