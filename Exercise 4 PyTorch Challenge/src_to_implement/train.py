@@ -2,6 +2,8 @@ import torch as t
 from data import ChallengeDataset
 from trainer import Trainer
 from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import matplotlib.ticker as mticker
 import numpy as np
 import model
 import pandas as pd
@@ -10,16 +12,18 @@ import datetime
 from sklearn.model_selection import train_test_split
 
 if __name__ == "__main__":
-    # HYPERPARAMETERS:
-    batch_size = 128
-    learning_rate = 0.2
+    # TRAINING HYPERPARAMETERS:
+    batch_size = 150
+    learning_rate = 0.001
+    learning_rate_decay = 0.6
+    learning_rate_decay_steps = 40
+    momentum = 0.9
     use_cuda = True
-    early_stopping_patience = 5
-    CPU_CORES = 0                   # increasing seems to halt training altogether
+    early_stopping_patience = 50
+    early_stopping_threshold = 0.003     # criterion for best validation loss: val_loss[now] < best_val_loss - threshold, in patience window
 
 
-    # load the data from the csv file and perform a train-test-split
-    # this can be accomplished using the already imported pandas and sklearn.model_selection modules
+    # Load the data from the csv file and perform a train-test-split
     # Locate the csv file in file system and read it:
     csv_path = ''
     for root, _, files in os.walk('.'):
@@ -35,32 +39,37 @@ if __name__ == "__main__":
     train_ds = ChallengeDataset(train_df, mode="train")
     val_ds = ChallengeDataset(val_df, mode="val")
 
-    # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
-    train_dl = t.utils.data.DataLoader(train_ds, batch_size=batch_size, num_workers=CPU_CORES, pin_memory=True)
-    val_dl = t.utils.data.DataLoader(val_ds, batch_size=batch_size, num_workers=CPU_CORES, pin_memory=True)
+    # Create dataloaders:
+    train_dl = t.utils.data.DataLoader(train_ds, batch_size=batch_size, pin_memory=True)
+    val_dl = t.utils.data.DataLoader(val_ds, batch_size=batch_size, pin_memory=True)
 
-    # create an instance of our ResNet model
+    # Create instance of ResNet model:
     model = model.ResNet()
 
-    # set up a suitable loss criterion (you can find a pre-implemented loss functions in t.nn)
-    # set up the optimizer (see t.optim)
-    # create an object of type Trainer and set its early stopping criterion
+    # Define loss, optimization, and setup trainer:
     loss_func = t.nn.BCELoss()
-    optimizer = t.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
-    trainer = Trainer(model, loss_func, optimizer, train_dl, val_dl, use_cuda, early_stopping_patience)
+    optimizer = t.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+    # TODO: try ADAM as optimizer
+    lr_annealer = t.optim.lr_scheduler.StepLR(optimizer, step_size=learning_rate_decay_steps, gamma=learning_rate_decay)
+    # lr_annealer = None
+    trainer = Trainer(model, loss_func, optimizer, lr_annealer, train_dl, val_dl, use_cuda, early_stopping_patience, early_stopping_threshold)
 
-    # go, go, go... call fit on trainer
-    train_loss, val_loss, epoch = trainer.fit(1)
+    # Train the model:
+    # trainer.restore_checkpoint(316)
+    train_loss, val_loss, epoch, best_epoch, f1_best, acc_best = trainer.fit()
 
-    # Optional: Export model as onnx
-    now = datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
-    trainer.save_onnx(f"exported models\\model {now}.onnx")
-
-
-    # plot the results
+    # Plot the results:
     plt.plot(np.arange(len(train_loss)), train_loss, label='train loss')
     plt.plot(np.arange(len(val_loss)), val_loss, label='val loss')
+    plt.title(#"Improvement on checkpoint_316\n" +
+              f"learning rate = {learning_rate} (step-annealed), batch size = {batch_size} \n" +
+              f"momentum = {momentum}\n" +
+              f"best epoch = {best_epoch} : f1 score = {f1_best:.3f}, accuracy = {acc_best:.3f}", loc="left", pad=10)
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.gca().yaxis.set_label_position("right")
     plt.yscale('log')
     plt.legend()
-    plt.savefig(f'loss curves\\losses_{epoch}epochs.png')
+    plt.tight_layout()
+    plt.savefig(f'loss curves\\epochs={best_epoch}_lr={learning_rate}_bs={batch_size}_mo={momentum}.png')
     plt.show()

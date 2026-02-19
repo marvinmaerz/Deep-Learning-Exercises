@@ -13,28 +13,36 @@ class Trainer:
                  model,                        # Model to be trained.
                  crit,                         # Loss function
                  optim=None,                   # Optimizer
+                 lr_annealer=None,                 # Annealer for the learning rate
                  train_dl=None,                # Training data set
                  val_test_dl=None,             # Validation (or test) data set
-                 cuda=True,                    # Whether to use the GPU
-                 early_stopping_patience=-1):  # The patience for early stopping. If validation loss does not decrease for this amount of epochs, stop training
-        # self._model = model
-        # self._crit = crit
+                 cuda=False,                    # Whether to use the GPU
+                 early_stopping_patience=-1,    # The patience for early stopping. If validation loss does not decrease for this amount of epochs, stop training
+                 early_stopping_threshold=0.01  # The minimal improvement which a new best validation loss must contribute to the old best validation loss
+                 ):
+        self._model = model
+        self._crit = crit
         self._optim = optim
+        self._lr_annealer = lr_annealer
         self._train_dl = train_dl
         self._val_test_dl = val_test_dl
         self._cuda = cuda
         self._stop_training = False             # set via threaded listener for keyboard interrupts
 
         self._early_stopping_patience = early_stopping_patience
+        self._early_stopping_threshold = early_stopping_threshold
 
-        self._device = t.device(
-            t.accelerator.current_accelerator().type
-            if cuda and t.cuda.is_available()
-            else "cpu")
+        self._device = t.device("cpu")
+        if cuda:
+            self._device = t.device(
+                t.accelerator.current_accelerator().type
+                if cuda and t.cuda.is_available()
+                else "cpu")
+            self._model = model.to(self._device)
+            self._crit = crit.to(self._device)
+
         print(f"Using {self._device} device")
 
-        self._model = model.to(self._device)
-        self._crit = crit.to(self._device)
 
         # if cuda:
         #     # If the current accelerator is available, we will use it. Otherwise, we use the CPU.
@@ -57,16 +65,20 @@ class Trainer:
         m.eval()
         x = t.randn(1, 3, 300, 300, requires_grad=True)
         y = self._model(x)
-        t.onnx.export(m,                 # model being run
-              x,                         # model input (or a tuple for multiple inputs)
-              fn,                        # where to save the model (can be a file or file-like object)
-              export_params=True,        # store the trained parameter weights inside the model file
-              opset_version=10,          # the ONNX version to export the model to
-              do_constant_folding=True,  # whether to execute constant folding for optimization
-              input_names = ['input'],   # the model's input names
-              output_names = ['output'], # the model's output names
-              dynamic_axes={'input' : {0 : 'batch_size'},    # variable lenght axes
-                            'output' : {0 : 'batch_size'}})
+        t.onnx.export(
+            m,                          # model being run
+            x,                          # model input (or a tuple for multiple inputs)
+            fn,                         # where to save the model (can be a file or file-like object)
+            export_params=True,         # store the trained parameter weights inside the model file
+            opset_version=10,           # the ONNX version to export the model to
+            do_constant_folding=True,   # whether to execute constant folding for optimization
+            input_names = ['input'],    # the model's input names
+            output_names = ['output'],  # the model's output names
+            dynamic_axes={'input' : {0 : 'batch_size'},    # variable length axes
+                        'output' : {0 : 'batch_size'}},
+            external_data=False,
+            dynamo=False,
+            )
 
 
     def _listen_for_break(self):
@@ -166,11 +178,12 @@ class Trainer:
                 targets.append(yb_cpu.numpy())
 
         val_loss = total_loss / total_num
-        # TODO: add other metrics (F1 score, accuracy?)
+
         predictions = np.concatenate(predictions)
         targets = np.concatenate(targets)
 
-        f1 = f1_score(targets, predictions, average="macro")        # average="macro" due to multi-label learning
+        f1_per_class = f1_score(targets, predictions, average=None)
+        f1 = np.mean(f1_per_class)
         accuracy = np.mean(predictions == targets)
 
         return val_loss, f1, accuracy
@@ -192,15 +205,21 @@ class Trainer:
         # create a list for the train and validation losses, and create a counter for the epoch
         train_loss = []
         val_loss = []
+        f1s = []
+        accuracy = []
         epoch = 0
-        best_val_loss = float('inf')
+        best_val_loss = float('inf')        # Save model with minimal validation loss
+        best_f1 = 0.0                       # Save model with maximum f1 score
+        save_best = "f1"                    # allowed: "f1" or "val_loss"
         best_epoch = 0
         remaining_patience = self._early_stopping_patience
 
         threading.Thread(target=self._listen_for_break, daemon=True).start()
 
         table = []
-        
+
+        train_start = time.time()
+
         while True:
             # stop by epoch number
             # train for a epoch and then calculate the loss and metrics on the validation set
@@ -210,52 +229,71 @@ class Trainer:
             # return the losses for both training and validation
             if epochs != -1 and epoch >= epochs: break
             if self._stop_training:
-                print("Manual training stop triggered.\nSaving current model.")
+                print("\nManual training stop triggered. Saving current model.")
                 self.save_checkpoint(epoch)
                 break
 
-            start = time.time()
+            epoch_start = time.time()
+            epoch_stats = []
 
             # Training and validating
-            print("* Epoch ", epoch)
+            print("\n* Epoch ", epoch)
             train_loss.append(self.train_epoch())
             v_loss, f1, acc = self.val_test()
             val_loss.append(v_loss)
+            f1s.append(f1)
+            accuracy.append(acc)
 
-            # Saving best model
-            if val_loss[epoch] < best_val_loss:
-                best_val_loss = val_loss[epoch]
+            # Saving best model, wrt. f1 score
+            if f1 > best_f1 and save_best == "f1":
+                best_f1 = f1
                 best_epoch = epoch
                 print("Saving best current model at epoch ", epoch)
                 self.save_checkpoint(epoch)
 
-            # Early stopping checks:
+            # Early stopping checks & save best model wrt. validation loss
+            if v_loss < best_val_loss - self._early_stopping_threshold:
+                best_val_loss = v_loss
+                print("Resetting remaining early stopping patience")
+                remaining_patience = self._early_stopping_patience
+                if save_best == "val_loss":
+                    best_epoch = epoch
+                    print("Saving best current model at epoch ", epoch)
+                    self.save_checkpoint(epoch)
+            else:
+                remaining_patience -= 1
+
+            if remaining_patience <= 0:
+                print(f"Early stopping, because validation loss didn't decrease for {self._early_stopping_patience} epochs!")
+                break
+
             val_loss_diff = 0.0
-            tolerance = 0.0                     # hyperparameter? suggestion: set to either very small negative or positive value to allow more or less strict differences
             if epoch >= 1:
                 val_loss_diff = val_loss[epoch] - val_loss[epoch - 1]
-            if val_loss_diff > tolerance:       # validation loss didn't decrease, so count down patience
-                if remaining_patience == 0:
-                    print("Early stopping!")
-                    break
-                remaining_patience -= 1
-            elif val_loss_diff <= tolerance:    # validation loss decreased, reset remaining patience
-                remaining_patience = self._early_stopping_patience
+
+            if self._lr_annealer is not None: self._lr_annealer.step()
 
             # Printing & collecting metrics:
-            # print("Validation loss: ", val_loss[epoch], f" ({val_loss_diff})")
-            print("Took {:.3f}".format(time.time() - start), " seconds.")
+            epoch_stats.append([v_loss, f"({val_loss_diff:.3f})", f1, acc, f"{time.time() - epoch_start:.3f}s"])
+            print(tabulate.tabulate(epoch_stats, headers=["Validation Loss", "Diff", "F1 Score", "Accuracy", "Runtime"], tablefmt="github"))
             table.append([epoch, val_loss[epoch], val_loss_diff, f1, acc])
-            table.append([])
 
             epoch += 1
 
-        print("Restoring best model at epoch ", best_epoch)
+        print("\nRestoring best model at epoch ", best_epoch)
         self.restore_checkpoint(best_epoch)
 
-        print(tabulate.tabulate(table, headers=["Epoch", "Validaton Loss", "Difference", "F1 Score", "Accuracy"], tablefmt="github"))
+        # Print table
+        print(f"Trained for {time.time() - train_start:.3f} seconds")
+        table.append([])
+        table.append([f"Best: {best_epoch}",
+                      val_loss[best_epoch],
+                      f"{val_loss[best_epoch] - val_loss[best_epoch - 1]}",
+                      f1s[best_epoch],
+                      accuracy[best_epoch]])
+        print("\n",tabulate.tabulate(table, headers=["Epoch", "Validaton Loss", "Difference", "F1 Score", "Accuracy"], tablefmt="github"))
 
-        return train_loss, val_loss, epoch
+        return train_loss, val_loss, epoch, best_epoch, f1s[best_epoch], accuracy[best_epoch]
                     
 
 

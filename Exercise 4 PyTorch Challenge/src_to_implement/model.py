@@ -16,7 +16,7 @@ class ResNet(nn.Module):
         self.resblock3 = ResBlock(128, 256, 2)
         self.resblock4 = ResBlock(256, 512, 2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))     # GlobalAvgPool resulting in a 1x1 value for each of the 512 feature maps
-        self.flatten = nn.Flatten(start_dim=1)
+        self.flatten = nn.Flatten()
         self.sigmoid = nn.Sigmoid()
         self.fc = nn.Linear(512, 2)
 
@@ -30,8 +30,8 @@ class ResNet(nn.Module):
         x = self.resblock3(x)
         x = self.resblock4(x)
         x = self.avgpool(x)
-        # x = self.flatten(x)
-        x = x.view(x.size(0), -1)   # flatten dynamically (onnx had a problem with nn.Flatten)
+        x = self.flatten(x)
+        #x = x.view(x.size(0), -1)   # flatten dynamically (onnx had a problem with nn.Flatten)
         x = self.fc(x)
         x = self.sigmoid(x)
         return x
