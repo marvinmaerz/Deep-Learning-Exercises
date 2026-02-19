@@ -9,3 +9,6 @@ Exercise 2 Convolutional Neural Network/src_to_implement/plots/TestNeuralNetwork
 log.txt
 /Exercise 4 PyTorch Challenge/src_to_implement/images
 *.zip
+*.onnx
+*.ckp
+*.data
